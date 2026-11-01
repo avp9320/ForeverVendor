@@ -1,0 +1,6 @@
+package-as: ForeverVendor
+
+ignore:
+  - .github
+  - .gitignore
+  - README.md
