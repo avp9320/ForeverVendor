@@ -30,6 +30,8 @@ Forever Vendor has one job: get gray junk out of your bags without putting anoth
 
 Place the `ForeverVendor` folder inside your WoW `Interface/AddOns` folder, then enable **Forever Vendor** on the AddOns screen.
 
+GitHub releases are packaged automatically as installable `ForeverVendor` ZIP files for addon-manager use.
+
 ## Compatibility
 
 Built for the same World of Warcraft: Forever addon baseline as the rest of the Forever addon suite (`Interface: 16001`). The code supports both legacy container functions and their `C_Container` equivalents where available.
