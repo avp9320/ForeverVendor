@@ -2,7 +2,8 @@
 ## Title: Forever Vendor
 ## Notes: Simple automatic junk selling for World of Warcraft: Forever.
 ## Author: Andy + ChatGPT
-## Version: 0.1.0
+## Version: 0.1.1
 ## SavedVariables: ForeverVendorDB
 
 Core.lua
+Debug.lua
