@@ -93,6 +93,16 @@ local function getBagMax()
     return tonumber(NUM_BAG_SLOTS) or 4
 end
 
+-- Forever's modern client removed the legacy GetItemInfo global.
+-- Keep the fallback for older clients, but prefer the current C_Item API.
+local function GetCachedJunkInfo(link)
+    local itemInfo = C_Item and C_Item.GetItemInfo or GetItemInfo
+    if type(itemInfo) ~= "function" then return nil, nil end
+    local ok, _, _, quality, _, _, _, _, _, _, _, sellPrice = pcall(itemInfo, link)
+    if not ok then return nil, nil end
+    return quality, sellPrice
+end
+
 local function buildQueue()
     queue = {}
     queueIndex = 1
@@ -101,7 +111,7 @@ local function buildQueue()
         for slot = 1, getNumSlots(bag) do
             local link = getItemLink(bag, slot)
             if link then
-                local _, _, quality, _, _, _, _, _, _, _, sellPrice = GetItemInfo(link)
+                local quality, sellPrice = GetCachedJunkInfo(link)
                 local count, locked = getItemCountAndLocked(bag, slot)
 
                 -- Quality 0 is poor/gray. Only sell items the vendor actually values.
@@ -153,7 +163,7 @@ local function sellNext(runSession)
 
     local link = getItemLink(item.bag, item.slot)
     if link then
-        local _, _, quality, _, _, _, _, _, _, _, sellPrice = GetItemInfo(link)
+        local quality, sellPrice = GetCachedJunkInfo(link)
         local count, locked = getItemCountAndLocked(item.bag, item.slot)
 
         -- Re-check immediately before selling. This protects against bag changes
