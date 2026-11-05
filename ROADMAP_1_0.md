@@ -10,8 +10,8 @@ This is a release gate, not a claim of implementation. README claims and static 
 
 ## Evidence
 
-- Code review: pending
-- Automated/static tests: pending
+- Code review: 2026-11-05 — confirmed prior implementation counted attempted sales as successful. Commit c0c8d17 now waits for observed merchant money gain before counting each stack; still needs live verification for delayed currency updates and edge cases.
+- Automated/static tests: pending (no live WoW runtime available; change has not been executed in client)
 - Live WoW: Forever client verification: pending
 - Release ZIP and WoWUp installation: pending
 
