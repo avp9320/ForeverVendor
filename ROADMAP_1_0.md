@@ -8,6 +8,11 @@ This is a release gate, not a claim of implementation. README claims and static 
 - [ ] Exercise bag swaps, partial stacks, locked items, no-price items, rapid vendor close/reopen and manual /fv sell
 - [ ] Verify WoWUp 1.0 release packaging and compatibility
 
+## Phase 1 implementation notes
+
+- [x] Merchant sale confirmation now waits up to 1.2 seconds for both exact vendor proceeds and an inventory stack/slot change (`Core.lua`, commit `7701c0e`). No repeated use of the same queued slot during confirmation; unconfirmed sales are excluded from the summary. Code inspection only, not a client-tested sale.
+- [ ] Live-test delayed money events, inventory sorting during a sale, other simultaneous money gains, and rejected sales. The observed money delta is not a transaction ID, so unrelated currency events remain an attribution limitation.
+
 ## Evidence
 
 - Code review: 2026-11-05 — confirmed prior implementation counted attempted sales as successful. Commit c0c8d17 now waits for observed merchant money gain before counting each stack; still needs live verification for delayed currency updates and edge cases.
