@@ -187,9 +187,26 @@ local function sellNext(runSession)
             sameItem = sameItem and item.itemID == currentID
         end
         if sameItem and quality == 0 and not locked and (sellPrice or 0) > 0 then
+            -- A sale attempt is not proof of success. Confirm proceeds on the
+            -- next timer tick before reporting the sale or advancing the queue.
+            local beforeMoney = type(GetMoney) == "function" and GetMoney() or nil
+            local expected = (sellPrice or 0) * math.max(1, count or 1)
             useItem(item.bag, item.slot)
-            soldCount = soldCount + math.max(1, count or 1)
-            soldValue = soldValue + ((sellPrice or 0) * math.max(1, count or 1))
+            if C_Timer and C_Timer.After then
+                C_Timer.After(0.12, function()
+                    if runSession ~= session or not selling then return end
+                    if beforeMoney and type(GetMoney) == "function" then
+                        local gained = math.max(0, (GetMoney() or beforeMoney) - beforeMoney)
+                        if gained == expected then
+                            soldCount = soldCount + math.max(1, count or 1)
+                            soldValue = soldValue + gained
+                        end
+                    end
+                    sellNext(runSession)
+                end)
+                return
+            end
+            -- Without a timer and money confirmation, avoid false summaries.
         end
     end
 
