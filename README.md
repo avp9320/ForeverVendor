@@ -38,4 +38,4 @@ Built for the same World of Warcraft: Forever addon baseline as the rest of the 
 
 ## Version
 
-0.1.0
+0.1.2
