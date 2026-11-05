@@ -193,17 +193,32 @@ local function sellNext(runSession)
             local expected = (sellPrice or 0) * math.max(1, count or 1)
             useItem(item.bag, item.slot)
             if C_Timer and C_Timer.After then
-                C_Timer.After(0.12, function()
-                    if runSession ~= session or not selling then return end
-                    if beforeMoney and type(GetMoney) == "function" then
-                        local gained = math.max(0, (GetMoney() or beforeMoney) - beforeMoney)
-                        if gained == expected then
-                            soldCount = soldCount + math.max(1, count or 1)
-                            soldValue = soldValue + gained
-                        end
+                -- Money updates can arrive after the first timer tick on Forever.
+                -- Poll for a bounded period without attempting the same sale twice.
+                -- Require both exact proceeds and a changed stack/slot so unrelated
+                -- incoming money cannot by itself confirm a merchant transaction.
+                local attempts = 0
+                local function confirmSale()
+                    if runSession ~= session or not selling or not merchantIsOpen() then return end
+                    attempts = attempts + 1
+                    local nowLink = getItemLink(item.bag, item.slot)
+                    local nowCount = getItemCountAndLocked(item.bag, item.slot)
+                    local stackChanged = nowLink ~= link or (nowCount or 0) < (count or 1)
+                    local gained = beforeMoney and type(GetMoney) == "function"
+                        and math.max(0, (GetMoney() or beforeMoney) - beforeMoney) or 0
+                    if stackChanged and gained == expected then
+                        soldCount = soldCount + math.max(1, count or 1)
+                        soldValue = soldValue + gained
+                        sellNext(runSession)
+                    elseif attempts < 10 then
+                        C_Timer.After(0.12, confirmSale)
+                    else
+                        -- Unconfirmed sales are not counted. Continue processing
+                        -- other slots instead of retrying a potentially sold item.
+                        sellNext(runSession)
                     end
-                    sellNext(runSession)
-                end)
+                end
+                C_Timer.After(0.12, confirmSale)
                 return
             end
             -- Without a timer and money confirmation, avoid false summaries.
