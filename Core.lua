@@ -67,6 +67,15 @@ local function getItemLink(bag, slot)
     end
 end
 
+local function getItemID(bag, slot)
+    if C_Container and C_Container.GetContainerItemID then
+        return C_Container.GetContainerItemID(bag, slot)
+    elseif GetContainerItemID then
+        return GetContainerItemID(bag, slot)
+    end
+    return nil
+end
+
 local function getItemCountAndLocked(bag, slot)
     if C_Container and C_Container.GetContainerItemInfo then
         local info = C_Container.GetContainerItemInfo(bag, slot)
@@ -119,6 +128,8 @@ local function buildQueue()
                     queue[#queue + 1] = {
                         bag = bag,
                         slot = slot,
+                        itemID = getItemID(bag, slot),
+                        link = link,
                         value = (sellPrice or 0) * math.max(1, count or 1),
                     }
                 end
@@ -168,7 +179,14 @@ local function sellNext(runSession)
 
         -- Re-check immediately before selling. This protects against bag changes
         -- between opening the vendor and processing the queued slot.
-        if quality == 0 and not locked and (sellPrice or 0) > 0 then
+        -- A bag can be rearranged while the timer is waiting. Never sell
+        -- a replacement item simply because it is also gray.
+        local sameItem = link == item.link
+        local currentID = getItemID(item.bag, item.slot)
+        if item.itemID and currentID then
+            sameItem = sameItem and item.itemID == currentID
+        end
+        if sameItem and quality == 0 and not locked and (sellPrice or 0) > 0 then
             useItem(item.bag, item.slot)
             soldCount = soldCount + math.max(1, count or 1)
             soldValue = soldValue + ((sellPrice or 0) * math.max(1, count or 1))
